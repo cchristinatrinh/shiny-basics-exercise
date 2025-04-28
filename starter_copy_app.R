@@ -86,9 +86,9 @@ mainPanel(
 ### Enter Outputs After this line
 ###
 ###
-  plotOutput("plot"),
+  plotOutput("plot1"),
   tableOutput("static"),
-  plotOutput("bivariate"),
+  plotOutput("plot2"),
   verbatimTextOutput("summary"),
   dataTableOutput("dynamic")
 
@@ -109,36 +109,32 @@ server <- function(input, output, session) {
 ### Enter Server Code After this line
 ###
 
-  data_filtered <- reactive({
-    energy_year |> filter(Report_Year %in% input$year)
-  })
-  
 ## Create single variable plot
-  
-## Create base plot
-  output$plot <- renderPlot({
-    df <- data_filtered()
-    
-    var1 <- (input$var1)
+  output$plot1 <- renderPlot({
+    df <- energy_year |>
+      filter(Report_Year %in% input$year)
     
     if (is.numeric(df[[input$var1]])) {
-      p <- ggplot(df, aes(x = !!var1)) +
+      pl <- ggplot(df, aes(x = !!(input$var1))) +
         geom_histogram(bins = input$num1) +
         facet_wrap(~Report_Year)
       if (input$log1) {
-        p <- p + scale_x_log10()
+        pl <- pl + scale_x_log10()
       }
+      
     } else {
-      p <- ggplot(df, aes(x = !!var1)) +
+      pl <- ggplot(df, aes(x = !!(input$var1))) +
         geom_bar() +
         facet_wrap(~Report_Year)
       if (input$flip) {
-        p <- p + coord_flip()
+        pl <- pl + coord_flip()
       }
     }
-    p
+    pl
   })
+## Create base plot
 
+  
 ## Check for other inputs and adjust base plot   
   
   
@@ -220,16 +216,17 @@ server <- function(input, output, session) {
 # 
 # } #end if
  
-  output$bivariate <- renderPlot({
-    df <- data_filtered()
+  output$plot2 <- renderPlot({
+    df <- energy_year |>
+      filter(Report_Year %in% input$year)
     
-    var_x <- (input$var2)
-    var_y <- (input$var3)
-    
+
     isnx <- is.numeric(df[[input$var2]])
     isny <- is.numeric(df[[input$var3]])
     
-    p <- ggplot(df, aes(x = !!var_x, y = !!var_y, color = Report_Year))
+    p <- ggplot(df, aes(x = !!(input$var2), y = !!(input$var3), color = as.factor(Report_Year))) +
+      labs(color = "Report Year")
+      
     
     if (isnx & isny) {
       p <- p + geom_point()
@@ -240,17 +237,17 @@ server <- function(input, output, session) {
         p <- p + scale_y_log10()
       }
       if (input$smooth) {
-        p <- p + geom_smooth(method = "lm", se = FALSE)
+        p <- p + geom_smooth(method = "lm", se = FALSE, color = "blue")
       }
       
     } else if (isnx) {
-      p <- p + geom_boxplot(aes(group = !!var_y))
+      p <- p + geom_boxplot(aes(group = !!(input$var3)))
       if (input$log2) {
         p <- p + scale_x_log10()
       }
       
     } else if (isny) {
-      p <- p + geom_boxplot(aes(group = !!var_x))
+      p <- p + geom_boxplot(aes(group = !!(input$var2)))
       if (input$log3) {
         p <- p + scale_y_log10()
       }
