@@ -264,35 +264,25 @@ server <- function(input, output, session) {
 ## Create Linear Model Output
 ## Inside the render function, check if the OLS is selected
 ## If so, create a temporary data frame with data from the selected years
-
+  output$summary <- renderPrint({
+    if (input$smooth) {
+      df <- energy_year |>
+        filter(Report_Year %in% input$year)
+    }
+      
 
 ## Check if either variable needs to be transformed and 
 ## then transform the data as required for the Linear Model and create output
 ## 
       
-  output$summary <- renderPrint({
-    df <- data_filtered()
+    df <- df |>
+      mutate(
+        xvar = if (input$log2) log(!!(input$var2)) else !!(input$var2),
+        yvar = if (input$log3) log(!!(input$var3)) else !!(input$var3)
+      )
     
-    if (!is.numeric(df[[input$var2]]) & !is.numeric(df[[input$var3]])) {
-      return(NULL)
-    }
-    
-    df <- df %>% drop_na(!!(input$var2), !!(input$var3))
-    
-    if (input$log2) {
-      df <- df %>% mutate(xvar = log(!!(input$var2)))
-    } else {
-      df <- df %>% mutate(xvar = !!(input$var2))
-    }
-    
-    if (input$log3) {
-      df <- df %>% mutate(yvar = log(!!(input$var3)))
-    } else {
-      df <- df %>% mutate(yvar = !!(input$var3))
-    }
-    
-    summary(lm(yvar ~ xvar, data = df))
-    
+    model <- lm(yvar ~ xvar, data = df)
+    summary(model)
   })
 
 
