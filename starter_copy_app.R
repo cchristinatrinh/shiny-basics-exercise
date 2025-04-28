@@ -2,15 +2,30 @@ library(shiny)
 library(tidyverse)
 
 ## Read in Data ------------------
-
+energy_year <- read_rds("data/energy_year.rds")
 
 ## Transform Data to Factors
-
+energy_year <- energy_year |>
+  mutate(Ward = factor(Ward),
+         Report_Year = factor(Report_Year),
+         Type_SS = factor(Type_SS),
+         Type_EPA = factor(Type_EPA),
+         Metered_Energy = factor(Metered_Energy),
+         Metered_Water = factor(Metered_Water))
 
 
 
 ## Create `Built`
-
+energy_year |>
+  mutate(Era = case_when(
+    Built < 1900 ~ "Pre-1900",
+    Built < 1951 ~ "Early-Mid 20th",
+    Built < 2000 ~ "Late 20th",
+    Built < 2011 ~ "Aughts",
+    .default = "Teens and later") 
+  ) |>
+  relocate(Era, .after = Built)
+                    
 
 
 
