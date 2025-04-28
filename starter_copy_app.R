@@ -149,27 +149,26 @@ server <- function(input, output, session) {
   
   
   output$static <- renderTable({
-    df <- data_filtered()
+    df <- energy_year |>
+      filter(Report_Year %in% input$year,
+             !(!!input$var1 %in% c(NA, 0))) |>
+      select(input$var1)
     
-    if (!is.numeric(df[[input$var1]])) {
-      return(NULL)
-    }
+
     
-    vec <- df[[input$var1]]
-    vec <- vec[!is.na(vec)]
-    
-    if (input$log1) {
-      vec <- log(vec)
-    }
-    
-    summarize_data(vec, input$num2)
-  })
-  
+
   
 
 ## Check for log and then run t.test of transformed data (or not) 
 ## using function from business logic section   
-
+    
+    if (input$log1) {
+      df <- log(df)
+    }
+    
+    summarize_data(df, input$num2)
+  })
+  
 
   
 
