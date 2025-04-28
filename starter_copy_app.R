@@ -56,17 +56,17 @@ sidebarPanel(
 ###
 ### Enter Inputs after this line 
 ###
-  varSelectInput("var1", "Select a variable", data = energy_year, selected = "Energy_Star_Score"),
-  checkboxGroupInput("year", "Select one or more report years of interest", choices = years_vec, selected = 2022),
-  checkboxInput("flip", "Flip coordinates?"),
-  checkboxInput("log1", "Log transform axis and data?"),
-  sliderInput("num1", "Number of histogram bins", value = 40, min = 1, max = 100),
-  numericInput("num2", "Null value for true population mean", value = 0, min = 0, max = max(energy_year$Electricity_Grid_Usage)),
-  varSelectInput("var2", "Select a variable for x-axis", data = energy_year, selected = "Source_EUI"),
-  checkboxInput("log2", "Log transform variable for x-axis?"),
-  varSelectInput("var3", "Select a variable for y-axis", data = energy_year, selected = "Site_EUI"),
-  checkboxInput("log3", "Log transform variable for y-axis?"),
-  checkboxInput("smooth", "Add linear model smoother line?")
+  varSelectInput("var1", "Variable?", data = energy_year, selected = "Energy_Star_Score"),
+  checkboxGroupInput("year", "Which Report Year(s)?", choices = years_vec, selected = 2022),
+  checkboxInput("flip", "Flip coordinates on Factors?"),
+  checkboxInput("log1", "Log Transform?"),
+  sliderInput("num1", "Number of Histogram Bins?", value = 40, min = 1, max = 100),
+  numericInput("num2", "Null Value", value = 0, min = 0, max = max(energy_year$Electricity_Grid_Usage)),
+  varSelectInput("var2", "X Variable?", data = energy_year, selected = "Source_EUI"),
+  checkboxInput("log2", "Log Transform?"),
+  varSelectInput("var3", "Y Variable?", data = energy_year, selected = "Site_EUI"),
+  checkboxInput("log3", "Log Transform?"),
+  checkboxInput("smooth", "Fit OLS Model?")
   
   
   
@@ -89,7 +89,7 @@ mainPanel(
   plotOutput("plot"),
   tableOutput("static"),
   plotOutput("bivariate"),
-  tableOutput("summary"),
+  verbatimTextOutput("summary"),
   dataTableOutput("dynamic")
 
   
@@ -168,7 +168,7 @@ server <- function(input, output, session) {
   
 
 ## Check for log and then run t.test of transformed data (or not) 
-## using function from busines logic section   
+## using function from business logic section   
 
 
   
@@ -271,7 +271,7 @@ server <- function(input, output, session) {
 ## then transform the data as required for the Linear Model and create output
 ## 
       
-  output$summary <- renderTable({
+  output$summary <- renderPrint({
     df <- data_filtered()
     
     if (!is.numeric(df[[input$var2]]) & !is.numeric(df[[input$var3]])) {
@@ -292,8 +292,8 @@ server <- function(input, output, session) {
       df <- df %>% mutate(yvar = !!(input$var3))
     }
     
-    model <- lm(yvar ~ xvar, data = df)
-    broom::tidy(model)
+    summary(lm(yvar ~ xvar, data = df))
+    
   })
 
 
