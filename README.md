@@ -1,0 +1,1 @@
+This was an assignment in which I created Shiny Apps with basic inputs and outputs that connect together to support numerical and graphical analysis. I incorporated graphical outputs and statistical tests into an interactive app.
